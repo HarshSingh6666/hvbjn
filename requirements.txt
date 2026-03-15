@@ -1,0 +1,9 @@
+flask
+flask-cors
+python-dotenv
+SpeechRecognition
+pyttsx3
+pywhatkit
+pyaudio
+pyautogui
+requests

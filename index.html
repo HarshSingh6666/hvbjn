@@ -26,6 +26,12 @@
     </div>
   </header>
 
+  <!-- Backend Status Banner -->
+  <div class="backend-banner" id="backendBanner">
+    ⚡ <strong>System Control Mode:</strong> Run <code>python server.py</code> to enable — Open Apps, WhatsApp Messaging, Volume, Lock PC &amp; more
+    <button class="banner-close" onclick="this.parentElement.style.display='none'">✕</button>
+  </div>
+
   <!-- Main Container -->
   <main class="main-container">
 
@@ -63,7 +69,7 @@
         <span class="t-icon">▸</span> YOU SAID
       </div>
       <div class="transcript-text" id="transcriptText">
-        Press the button below or say <em>"Hey Jarvis"</em> to begin...
+        Press the button below or type a command to begin...
       </div>
     </div>
 
@@ -95,9 +101,9 @@
       </button>
     </div>
 
-    <!-- Text Input Fallback (for mobile / typing) -->
+    <!-- Text Input Fallback -->
     <div class="text-input-row">
-      <input type="text" id="textInput" placeholder="Type a command here... (e.g. play kesariya)" autocomplete="off" />
+      <input type="text" id="textInput" placeholder='Try: "open notepad" or "send message to Mom saying hi"' autocomplete="off" />
       <button id="sendBtn" class="send-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
@@ -105,7 +111,7 @@
       </button>
     </div>
 
-    <!-- API inputs hidden — key is hardcoded in script.js -->
+    <!-- API inputs hidden -->
     <input type="hidden" id="apiKeyInput" />
     <button id="saveApiBtn" style="display:none"></button>
 
@@ -117,6 +123,14 @@
         <button class="chip" data-cmd="What's today's date?">📅 Date</button>
         <button class="chip" data-cmd="Open YouTube">▶ YouTube</button>
         <button class="chip" data-cmd="Open Google">🔍 Google</button>
+        <button class="chip" data-cmd="Open WhatsApp">💬 WhatsApp</button>
+        <button class="chip" data-cmd="Open Notepad">📝 Notepad</button>
+        <button class="chip" data-cmd="Volume up">🔊 Vol Up</button>
+        <button class="chip" data-cmd="Volume down">🔉 Vol Down</button>
+        <button class="chip" data-cmd="Mute">🔇 Mute</button>
+        <button class="chip" data-cmd="Lock computer">🔒 Lock PC</button>
+        <button class="chip" data-cmd="Take screenshot">📸 Screenshot</button>
+        <button class="chip" data-cmd="Show contacts">👥 Contacts</button>
         <button class="chip" data-cmd="Tell me a joke">😄 Joke</button>
         <button class="chip" data-cmd="What can you do?">🤖 Help</button>
       </div>
@@ -134,6 +148,30 @@
     </div>
 
   </main>
+
+  <!-- Contacts Modal -->
+  <div class="modal-overlay" id="contactsModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span>👥 CONTACTS MANAGER</span>
+        <button class="modal-close-btn" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="contacts-list" id="contactsList">
+          <p style="color:var(--muted);font-size:.85rem;">Loading...</p>
+        </div>
+        <div class="add-contact-form">
+          <div class="form-label">ADD CONTACT</div>
+          <div class="form-row">
+            <input type="text" id="contactName" placeholder="Name (e.g. Mom)" />
+            <input type="text" id="contactNumber" placeholder="Number with country code (e.g. 919876543210)" />
+            <button id="addContactBtn" class="add-btn">+ Add</button>
+          </div>
+          <div class="form-hint">💡 Country code without + sign. India = 91XXXXXXXXXX</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
