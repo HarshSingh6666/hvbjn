@@ -563,6 +563,48 @@ body {
 }
 .jarvis-entry .history-content { color: hsl(195,70%,80%); }
 
+/* ===== TEXT INPUT FALLBACK ===== */
+.text-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.text-input-row input {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 12px 20px;
+  color: var(--text-bright);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  outline: none;
+  backdrop-filter: blur(12px);
+  transition: border-color var(--trans), box-shadow var(--trans);
+}
+.text-input-row input:focus {
+  border-color: var(--border-bright);
+  box-shadow: 0 0 0 3px hsla(195,100%,50%,0.12);
+}
+.text-input-row input::placeholder { color: var(--text-muted); font-size: 0.88rem; }
+
+.send-btn {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--primary-dim), var(--primary));
+  color: var(--bg-deep);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 18px hsla(195,100%,50%,0.35);
+  transition: transform var(--trans), box-shadow var(--trans);
+  flex-shrink: 0;
+}
+.send-btn svg { width: 18px; height: 18px; }
+.send-btn:hover { transform: scale(1.08); box-shadow: 0 0 28px hsla(195,100%,50%,0.5); }
+.send-btn:active { transform: scale(0.95); }
+
 /* ===== SCROLLBAR ===== */
 body::-webkit-scrollbar { width: 6px; }
 body::-webkit-scrollbar-track { background: var(--bg-deep); }

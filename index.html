@@ -95,6 +95,16 @@
       </button>
     </div>
 
+    <!-- Text Input Fallback (for mobile / typing) -->
+    <div class="text-input-row">
+      <input type="text" id="textInput" placeholder="Type a command here... (e.g. play kesariya)" autocomplete="off" />
+      <button id="sendBtn" class="send-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+
     <!-- API inputs hidden — key is hardcoded in script.js -->
     <input type="hidden" id="apiKeyInput" />
     <button id="saveApiBtn" style="display:none"></button>

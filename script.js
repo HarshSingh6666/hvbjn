@@ -135,12 +135,29 @@ function setupApiPanel() {
 
 // ── Buttons ────────────────────────────────────────
 function setupButtons() {
-  listenBtn.addEventListener('click', () => {
+  // Support both click and touch for mobile
+  function toggleListen(e) {
+    e.preventDefault();
     if (STATE.isListening) stopListening();
     else startListening();
-  });
+  }
+  listenBtn.addEventListener('click', toggleListen);
+  listenBtn.addEventListener('touchstart', toggleListen, { passive: false });
   stopBtn.addEventListener('click', stopSpeaking);
+  stopBtn.addEventListener('touchstart', e => { e.preventDefault(); stopSpeaking(); }, { passive: false });
   clearBtn.addEventListener('click', clearHistory);
+
+  // Text input fallback
+  const textInput = $('textInput');
+  const sendBtn   = $('sendBtn');
+  if (textInput && sendBtn) {
+    function sendText() {
+      const t = textInput.value.trim();
+      if (t) { handleCommand(t, true); textInput.value = ''; }
+    }
+    sendBtn.addEventListener('click', sendText);
+    textInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendText(); });
+  }
 }
 
 function setupKeyboardShortcut() {
@@ -170,19 +187,21 @@ function setupChips() {
 function startListening() {
   // Browser support check
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    const msg = "⚠ Your browser doesn't support voice recognition. Please open this page in Google Chrome or Microsoft Edge.";
-    showResponse(msg);
-    speak(msg);
-    return;
+    const msg = "⚠ Voice not supported. Use Google Chrome or Edge. You can still TYPE commands in the box below!";
+    showResponse(msg); speak(msg); return;
   }
 
-  // Warn if running on file:// (Chrome blocks mic)
+  // Warn if running on file://
   if (window.location.protocol === 'file:') {
-    const msg = "⚠ Microphone is blocked on local files! Please open Jarvis via the local server at http://localhost:8000 — instructions are in the console.";
-    showResponse(msg);
-    console.warn("%c⚠ JARVIS MIC FIX", "font-size:16px;color:cyan",
-      "\nChrome blocks mic on file:// URLs.\nTo fix this, run this command in your terminal:\n\n  python -m http.server 8000\n\nThen open: http://localhost:8000 in Chrome.");
-    return;
+    const msg = "⚠ Mic blocked on local file! Open via http://localhost:8000";
+    showResponse(msg); return;
+  }
+
+  // On mobile, mic only works on HTTPS (not http://192.x.x.x)
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile && window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+    const msg = "⚠ On phone, mic needs HTTPS. Use the TYPE box below to send commands — it works fully!";
+    showResponse(msg); speak("Please use the text input box below to type your command, sir."); return;
   }
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -284,6 +303,18 @@ async function handleCommand(text, fromChip = false) {
   }
 }
 
+// ── Safe Link Opener (never navigates Jarvis away) ──
+function openLink(url) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { if (a.parentNode) a.parentNode.removeChild(a); }, 300);
+}
+
 // ── Built-in Commands ──────────────────────────────
 async function runBuiltIn(q) {
   const now = new Date();
@@ -301,14 +332,14 @@ async function runBuiltIn(q) {
   }
 
   // Open YouTube
-  if (/open youtube|youtube/i.test(q)) {
-    window.open('https://www.youtube.com', '_blank');
+  if (/open youtube/i.test(q)) {
+    openLink('https://www.youtube.com');
     return "Opening YouTube for you, sir.";
   }
 
   // Open Google
   if (/open google(?! maps)/i.test(q)) {
-    window.open('https://www.google.com', '_blank');
+    openLink('https://www.google.com');
     return "Opening Google, sir.";
   }
 
@@ -316,51 +347,51 @@ async function runBuiltIn(q) {
   if (/search (for |google )?(.*)/i.test(q)) {
     const match = q.match(/search (?:for |google )?(.+)/i);
     if (match && match[1]) {
-      const query = encodeURIComponent(match[1]);
-      window.open(`https://www.google.com/search?q=${query}`, '_blank');
+      openLink(`https://www.google.com/search?q=${encodeURIComponent(match[1])}`);
       return `Searching Google for "${match[1]}", sir.`;
     }
   }
 
   // Open GitHub
   if (/open github/i.test(q)) {
-    window.open('https://github.com', '_blank');
+    openLink('https://github.com');
     return "Opening GitHub, sir.";
   }
 
-  // Open WhatsApp — app on mobile, web on desktop
-  if (/open whatsapp/i.test(q)) {
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (isMobile) {
-      window.location.href = 'whatsapp://';
-    } else {
-      window.open('https://web.whatsapp.com', '_blank');
-    }
-    return "Opening WhatsApp for you, sir.";
+  // Open WhatsApp — universal link opens app on phone automatically
+  if (/whatsapp/i.test(q)) {
+    openLink('https://wa.me/');
+    return "Opening WhatsApp, sir.";
   }
 
   // Open Gmail
-  if (/open gmail|open email/i.test(q)) {
-    window.open('https://mail.google.com', '_blank');
+  if (/gmail|email/i.test(q) && /open/i.test(q)) {
+    openLink('https://mail.google.com');
     return "Opening Gmail, sir.";
   }
 
   // Open Maps
-  if (/open (google )?maps/i.test(q)) {
-    window.open('https://maps.google.com', '_blank');
+  if (/maps/i.test(q)) {
+    openLink('https://maps.google.com');
     return "Opening Google Maps, sir.";
   }
 
+  // Open Instagram
+  if (/instagram/i.test(q)) {
+    openLink('https://www.instagram.com');
+    return "Opening Instagram, sir.";
+  }
+
   // Open Twitter / X
-  if (/open (twitter|x\.com)/i.test(q)) {
-    window.open('https://twitter.com', '_blank');
+  if (/twitter|\bx\.com\b/i.test(q)) {
+    openLink('https://twitter.com');
     return "Opening Twitter, sir.";
   }
 
-  // Calculator
-  if (/open calculator/i.test(q)) {
-    window.open('calculator:', '_blank');
-    return "Opening calculator, sir.";
+  // Open Spotify
+  if (/spotify/i.test(q)) {
+    openLink('https://open.spotify.com');
+    return "Opening Spotify, sir.";
   }
 
   // Joke
@@ -376,24 +407,18 @@ async function runBuiltIn(q) {
     return jokes[Math.floor(Math.random() * jokes.length)];
   }
 
-  // Music / Play song — uses YouTube search with autoplay trick
-  if (/play (.+?)(?:\s+(?:on youtube|song|music))?$/i.test(q) && !/open|search/i.test(q)) {
-    const match = q.match(/play (.+?)(?:\s+(?:on youtube|song|music))?$/i);
-    if (match) {
-      const songName = match[1].trim();
-      const encoded = encodeURIComponent(songName);
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (isMobile) {
-        // On mobile: try to open YouTube app first
-        window.location.href = `vnd.youtube://results?search_query=${encoded}`;
-        setTimeout(() => {
-          window.open(`https://www.youtube.com/results?search_query=${encoded}`, '_blank');
-        }, 1500);
-      } else {
-        // On desktop: open YouTube search — first result auto-plays
-        window.open(`https://www.youtube.com/results?search_query=${encoded}`, '_blank');
-      }
-      return `Playing "${songName}", sir.`;
+  // Music / Play song — opens YouTube (phone auto-opens YouTube app)
+  if (/^play\b/i.test(q)) {
+    // Extract song name robustly
+    const songName = q
+      .replace(/^play\s+/i, '')
+      .replace(/\s+(on\s+)?(youtube|spotify|music|song|gaana|gana)\s*$/i, '')
+      .trim();
+    if (songName) {
+      const encoded = encodeURIComponent(songName + ' official song');
+      // YouTube link works as universal link — opens YouTube app on phone
+      openLink(`https://www.youtube.com/results?search_query=${encoded}`);
+      return `Playing "${songName}" on YouTube, sir.`;
     }
   }
 
@@ -420,12 +445,11 @@ async function runBuiltIn(q) {
   // Weather
   if (/weather|temperature|forecast/i.test(q)) {
     const cityMatch = q.match(/weather (?:in |for )?(.+)/i);
-    const city = cityMatch ? encodeURIComponent(cityMatch[1].trim()) : 'current location';
     if (cityMatch) {
-      window.open(`https://www.google.com/search?q=weather+${city}`, '_blank');
+      openLink(`https://www.google.com/search?q=weather+${encodeURIComponent(cityMatch[1].trim())}`);
       return `Checking weather for ${cityMatch[1]}, sir.`;
     }
-    window.open('https://www.google.com/search?q=weather', '_blank');
+    openLink('https://www.google.com/search?q=weather');
     return "Checking current weather for you, sir.";
   }
 
