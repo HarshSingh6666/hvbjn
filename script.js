@@ -55,7 +55,7 @@ async function loadContacts() {
 
 // ── State ──────────────────────────────────────────
 const STATE = {
-  apiKey: 'AIzaSyCEX1O78N9aO58bXKjlFMD60EU4REDLzIA',
+  apiKey: '',
   geminiModel: 'gemini-2.5-flash',
   isListening: false,
   isSpeaking: false,
